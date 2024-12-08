@@ -17,8 +17,7 @@ module.exports = {
     screens: {
       xs: "480px",
       ss: "620px",
-      sw:'780',
-      sm: "900px",
+      sm: "820px",
       md: "1060px",
       lg: "1200px",
       xl: "1700px",
@@ -26,3 +25,31 @@ module.exports = {
   },
   plugins: [],
 };
+
+// const withMT = require("@material-tailwind/react/utils/withMT");
+ 
+// module.exports = withMT({
+//   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
+//   theme: {
+//     extend: {
+//       colors: {
+//         primary: "#00040f",
+//         secondary: "#00f6ff",
+//         dimWhite: "rgba(255, 255, 255, 0.7)",
+//         dimBlue: "rgba(9, 151, 124, 0.1)",
+//       },
+//       fontFamily: {
+//         poppins: ["Poppins", "sans-serif"],
+//       },
+//     },
+//     screens: {
+//       xs: "480px",
+//       ss: "620px",
+//       sm: "820px",
+//       md: "1060px",
+//       lg: "1200px",
+//       xl: "1700px",
+//     },
+//   },
+//   plugins: [],
+// });

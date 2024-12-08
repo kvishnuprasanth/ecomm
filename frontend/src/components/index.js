@@ -1,47 +1,53 @@
-import Left from "./Left";
-import Right from "./Right";
-import Home from "./Home";
-import ProfileBox from "./ProfileBox";
-import PostFooter from "./PostFooter";
-import Signup from "./SignUp";
-import Login from "./Login";
-import PostProfile from './PostProfile'
-import Profile from './Profile'
-import Bookmark from './Bookmark'
-import Post from './Post'
-import Comment from './Comments'
-import CommentForm from './CommentForm'
-import EditProfile from './EditProfileForm'
-import People from './People'
-import CreatePostForm from './CreatePostForm'
-import ForgotPasswd from './ForgotPasswd'
-import SetPasswd from './SetPasswd'
-import ImagePreview from './ImagePreview'
-import ConfirmForm from './ConfirmForm'
-import Chat from './Chat'
-import Retweets from './Retweets'
+import Home from './Home'
+import Login from './Login'
+import SignUp from './SignUp'
+import Navbar from './Navbar'
+import Verification from './Verification'
+import SideBar from './SideBar'
+import PhotoSlider from './PhotoSLider'
+import ProductCard from './ProductCard'
+import SwiperComponent1 from './SwiperComponent'
+import SwiperComponent2 from './SwiperComponent2'
+import SwipeCard from './SwipeCard'
+import Footer from './Footer'
+import Cart from './Cart'
+import Orders from './Orders'
+import MidelSwiper from './MidelSwiper'
+import LastHome from './LastHome'
+import HomeSection_2 from './HomeSection_2'
+import AdminPanel from './AdminPanel'
+import CreateProductForm from './CreateProductForm'
+import Product from './Product'
+import Checkout from './Checkout'
+import ShippinAddressForm from './ShippingAddressForm'
+import CheckoutSuccess from './CHeckoutSuccess'
+import OrderItem from './OrderItem'
+import Products from './Products'
 
 export {
-    Left,
     Home,
-    Right,
-    ProfileBox,
-    PostFooter,
-    Signup,
     Login,
-    PostProfile,
-    Profile,
-    Bookmark,
-    Post,
-    Comment,
-    CommentForm,
-    EditProfile,
-    People,
-    CreatePostForm,
-    ForgotPasswd,
-    SetPasswd,
-    ImagePreview,
-    ConfirmForm,
-    Chat,
-    Retweets
+    SignUp,
+    Navbar,
+    Verification,
+    SideBar,
+    PhotoSlider,
+    ProductCard,
+    SwiperComponent1,
+    SwipeCard,
+    SwiperComponent2,
+    Footer,
+    Cart,
+    Orders,
+    MidelSwiper,
+    LastHome,
+    HomeSection_2,
+    AdminPanel,
+    CreateProductForm,
+    Product,
+    Checkout,
+    ShippinAddressForm,
+    CheckoutSuccess,
+    OrderItem,
+    Products
 }

@@ -1,66 +1,47 @@
-import React,{useState,useContext} from 'react'
-import { appState } from '../App'
-import avatar_1 from '../assets/avatar_1.png'
-import avatar_2 from '../assets/avatar_2.png'
-import avatar_3 from '../assets/avatar_3.png'
+import React from 'react'
 import {useFormik} from 'formik'
 import * as Yup from 'yup'
-import config from '../source'
+import logo from '../assets/logo.png'
+import { useSelector,useDispatch} from 'react-redux'
+import {afterSignUp} from '../store/signupSlice'
+import { useNavigate } from 'react-router-dom'
 
 const SignUp = () => {
-  const {toastWarn,toastInfo,toastSuccess,toastError,openSignUp,setOpenSignUp,dark,setOpenLogin,toast}=useContext(appState)
-  const [latest,setlatest]=useState('');
-  const [photo,setPhoto]=useState('');
-      const submit=async ()=>{
-        const formData = new FormData();
-        formData.append('avatar', photo);
-        formData.append('email', formik.values.email);
-        formData.append('password', formik.values.password);
-        formData.append('confirm_password', formik.values.confirm_password);
-        formData.append('name', formik.values.name);
-        formData.append('latest', latest);
-        if(formik.values.password!==formik.values.confirm_password) {
-          toastWarn('Password does not match');
-            return ;
+  const navigate=useNavigate()
+  const isSignUp=useSelector((state)=>state.isSignUp.isSignup);
+  const dispatch=useDispatch();
+    const handleKeyEnter1=(e)=>{
+        if(e.key=='Enter'){
+          formik2.handleSubmit()
         }
-        if(latest==='' || (photo==='' && latest!=='avatar_1' && latest!=='avatar_2' && latest!=='avatar_3')) {
-          toastWarn('Photo is compulsary');
-            return ;
+       }
+    const handleKeyEnter2=(e)=>{
+        if(e.key=='Enter'){
+          formik2.handleSubmit()
         }
-       let res= await fetch(`${config.baseUrl}/api/user/create`,{
-            method:"POST",
-            body:formData
+       }
+       const submit=async ()=>{
+        let res=await fetch("http://localhost:8000/api/user/create",{
+          method:"POST",
+          headers:{
+              "Content-Type":"application/json"
+          },
+          credentials:'include', 
+          body:JSON.stringify({
+              email:formik1.values.email,name:formik1.values.name,password:formik1.values.password,otp:formik2.values.otp
+          })
         })
-        const data=await res.json();
-        document.getElementById("update_profile").value = "";
-        if(res.status===200){            
-              toastSuccess('sucessfully registered');
-            
-            setOpenSignUp(false)
-            setOpenLogin(true)
+        if(res.status===200){
+          // window.alert('user created succesfully');
+          navigate('/login');
         }
-        else if(res.status===401){
-          toastWarn('password does not match');
-        }
-        else if(res.status===400){
-          toastWarn('user already exists .. please log-in');
-          setOpenSignUp(false)
-          setOpenLogin(true)
-        }
-        else{           
-            toastError('unable to register');
-        }
-        formik.values.name='';
-        formik.values.email='';
-        formik.values.password='';
-        formik.values.confirm_password='';
-      }
-      const formik = useFormik({
+       }
+       const formik1 = useFormik({
         initialValues: {
           name:'',
-          email:'',
-          password:'',
-          confirm_password:'',
+          email: '',
+          password: '',
+          confirm_password:''
         },
         validationSchema:Yup.object({
           name:Yup.string()
@@ -76,105 +57,136 @@ const SignUp = () => {
           .matches(/[A-Z]/, 'Password requires an uppercase letter')
           .matches(/[^\w]/, 'Password requires a symbol')
           .required('required'),
-          confirm_password:Yup.string()
-          .min(6,'password must be min 6 characters')
+          confirm_password: Yup
+          .string()
+          .oneOf([Yup.ref('password'), null], 'Passwords must match')
+        }),
+        onSubmit:async ()=>{
+          let res=await fetch("http://localhost:8000/api/user/checkuser",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            credentials:'include', 
+            body:JSON.stringify({
+                email:formik1.values.email
+            })
+          })
+          const data=await res.json();
+          if(res.status===200){
+            if(data.exist){
+              window.alert('user already exist');
+            }else{
+              let res=await fetch("http://localhost:8000/api/user/sendOtp",{
+              method:"POST",
+              headers:{
+                  "Content-Type":"application/json"
+              },
+              credentials:'include', 
+              body:JSON.stringify({
+                  email:formik1.values.email
+              })
+            })
+            if(res.status===200)
+                dispatch(afterSignUp.setFalse())
+            }
+          } 
+        }
+      });
+      const formik2 = useFormik({
+        initialValues: {
+          otp:''
+        },
+        validationSchema:Yup.object({
+          otp:Yup.string()
+          .min(4,'password must be min 4 characters')
           .matches(/[0-9]/, 'Password requires a number')
-          .matches(/[a-z]/, 'Password requires a lowercase letter')
-          .matches(/[A-Z]/, 'Password requires an uppercase letter')
-          .matches(/[^\w]/, 'Password requires a symbol')
           .required('required'),
         }),
         onSubmit:submit
       });
-      const handleKeyEnter=(e)=>{
-        if(e.key=='Enter'){
-          formik.handleSubmit();
-        }
-       }
-       const handlePhotoUpload=(e)=>{
-        setPhoto(e.target.files[0])
-      }
   return (
-    <div className={`${openSignUp?"block":"hidden"} transition duration-150 ease-in-out absolute z-40 top-4 left-[10%] sm:left-[30%] h-auto p-8 pb-3 w-[85%] ss:w-[500px] ${dark?"bg-black-gradient border-slate-600":"bg-slate-300 border-slate-200"} rounded-2xl border-2 `}>
-      <form action=""  className=' flex flex-col gap-6' onKeyUp={handleKeyEnter} enctype="multipart/form-data" >
-      <label className='flex flex-col'>
-            <span className={`${dark?"text-white":"text-black"} font-medium mb-4`}>Your Name</span>
-            <input 
-            type="text" 
-            name='name'
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="what's your name?"
-            className={`${dark?"bg-blue-900  text-white placeholder:text-secondary":"bg-white placeholder:text-black text-black" } py-4 px-4  rounded-lg outline-none border-none font-medium`}
-            />
-              {formik.touched.name && formik.errors.name && <p className={`${dark?"text-white ":"text-red-600 "} text-[0.8rem] ml-1  tracking-widest`}>{formik.errors.name}</p>}
-          </label>
-      <label className='flex flex-col'>
-            <span className={`${dark?"text-white":"text-black"} font-medium mb-4`}>Your Email</span>
-            <input 
-            type="email" 
-            name='email'
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="what's your email?"
-            className={`${dark?"bg-blue-900  text-white placeholder:text-secondary":"bg-white placeholder:text-black text-black" } py-4 px-4  rounded-lg outline-none border-none font-medium`}
-            />
-              {formik.touched.email && formik.errors.email && <p className={`${dark?"text-white ":"text-red-600 "} text-[0.8rem] ml-1  tracking-widest`}>{formik.errors.email}</p>}
-          </label>
-      <label className='flex flex-col'>
-            <span className={`${dark?"text-white":"text-black"} font-medium mb-4`}>Password</span>
-            <input 
-            type="password" 
-            name='password'
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="Enter password?"
-            className={`${dark?"bg-blue-900  text-white placeholder:text-secondary":"bg-white placeholder:text-black text-black" } py-4 px-4  rounded-lg outline-none border-none font-medium`}
-            />
-              {formik.touched.password && formik.errors.password && <p className={`${dark?"text-white ":"text-red-600 "} text-[0.8rem] ml-1  tracking-widest`}>{formik.errors.password}</p>}
-          </label>
-      <label className='flex flex-col'>
-            <span className={`${dark?"text-white":"text-black"} font-medium mb-4`}>Confirm_Password</span>
-            <input 
-            type="password" 
-            name='confirm_password'
-            value={formik.values.confirm_password}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="Enter Confirm_password?"
-            className={`${dark?"bg-blue-900  text-white placeholder:text-secondary":"bg-white placeholder:text-black text-black" } py-4 px-4  rounded-lg outline-none border-none font-medium`}
-            />
-              {formik.touched.confirm_password && formik.errors.confirm_password && <p className={`${dark?"text-white ":"text-red-600 "} text-[0.8rem] ml-1  tracking-widest`}>{formik.errors.confirm_password}</p>}
-          </label>
-          
-      <label className='flex flex-col'>
-            <span className={`${dark?"text-white":"text-black"} font-medium mb-4`}>Choose Avatar</span>
-            <div className='flex flex-row justify-around items-center'>
-              <img src={avatar_1} alt="avatar_1" className={`rounded-full h-[100px] w-[100px] hover:bg-slate-400 ${latest==='avatar_1'?'bg-slate-400':''} p-1 delay-75 cursor-pointer`} onClick={()=>{setlatest('avatar_1');setPhoto('')}}/>
-              <img src={avatar_2} alt="avatar_2" className={`rounded-full h-[100px] w-[100px] hover:bg-slate-400 ${latest==='avatar_2'?'bg-slate-400':''} p-1 delay-75 cursor-pointer`} onClick={()=>{setlatest('avatar_2');setPhoto('')}}/>
-              <img src={avatar_3} alt="avatar_3" className={`rounded-full h-[100px] w-[100px] hover:bg-slate-400 ${latest==='avatar_3'?'bg-slate-400':''} p-1 delay-75 cursor-pointer`} onClick={()=>{setlatest('avatar_3');setPhoto('')}}/>
-            </div>
-          </label>
-
-          <p className='flex justify-center items-center text-[1.125rem] font-medium left-[20%] text-red-600 -mb-3'>....... OR ........</p>
-          <label className='flex flex-col'>
-          <span className={`${dark?"text-white":"text-black"} font-medium mb-4`}>Upload Profile Photo</span>
-          <input id='update_profile' className='rounded-full cursor-pointer h-[1.9rem] bg-slate-600 text-[#3ddcf9]' type="file" name='photo'  placeholder="profile picture" onChange={handlePhotoUpload} onClick={()=>{setlatest('upload')}} />
+    <div className='flex flex-col justify-start items-center h-[150vh] w-[100vw] bg-gray-200'>
+      <img src={logo} className='h-[100px] w-[100px] ' alt="ecommerce logo" />
+      <div className='bg-white h-auto w-[350px] p-8 pt-6 shadow-xl'>
+       {isSignUp && <p className='font-poppins text-[2.25rem]'>Create Account</p>}
+      {!isSignUp && <p className='font-poppins text-[1.75rem]'>Verification required</p>}
+        {!isSignUp && <p className='font-poppins text-[0.9rem] '>To continue, complete this verification step. We've sent an OTP to the email <span className='font-bold'>{formik1.values.email}</span>. Please enter it below to complete verification.</p>}
+    {isSignUp && <form className='my-4 '  onKeyUp={handleKeyEnter1}>
+        <label className='flex flex-col'>
+          <span className='font-medium'>your Name</span>
+          <input 
+          type="name"
+          name='name'
+          value={formik1.values.name}
+          onChange={formik1.handleChange}
+          onBlur={formik1.handleBlur}
+          placeholder="Enter Name"
+          className='my-2 border-2 shadow-inner border-gray-500 h-[30px] p-4 px-2 outline-none '
+          />
+            {formik1.touched.name && formik1.errors.name && <p className={`text-red-700 font-medium text-[0.8rem] ml-1 tracking-widest`}>{formik1.errors.name}</p>}
         </label>
-      </form>
-      <div className='m-6 mb-3 right-3 font-medium'>
-      <button className={`h-[42px] rounded-xl border-2 border-slate-600 w-[80px] m-2 p-1 ${dark?"hover:bg-slate-700":"hover:bg-slate-100"}`} onClick={()=>{setOpenSignUp(false); formik.values.name='';
-        formik.values.email='';
-        formik.values.password='';
-        formik.values.confirm_password='';}} >Cancel</button>
-        <button className={`h-[42px] rounded-xl w-[80px] m-2 p-1 ${dark?"":" text-white"} bg-red-600 hover:bg-red-700`} onClick={formik.handleSubmit}>SignUp</button>
-        <span className={`${dark?"text-white hover:text-secondary":"text-green-800 hover:text-black"} cursor-pointer ml-5 text-[0.8rem]  tracking-widest`} onClick={()=>{setOpenSignUp(false);setOpenLogin(true); formik.values.name='';
-        formik.values.email='';
-        formik.values.password='';
-        formik.values.confirm_password='';}}>Login</span>
+        <label className='flex flex-col'>
+          <span className='font-medium'>your Email</span>
+          <input 
+          type="email"
+          name='email'
+          value={formik1.values.email}
+          onChange={formik1.handleChange}
+          onBlur={formik1.handleBlur}
+          placeholder="Enter email"
+          className='my-2 border-2 shadow-inner border-gray-500 h-[30px] p-4 px-2 outline-none '
+          />
+            {formik1.touched.email && formik1.errors.email && <p className={`text-red-700 font-medium text-[0.8rem] ml-1 tracking-widest`}>{formik1.errors.email}</p>}
+        </label>
+        <label className='flex flex-col'>
+          <span className='font-medium'>your Password</span>
+          <input 
+          type="password"
+          name='password'
+          value={formik1.values.password}
+          onChange={formik1.handleChange}
+          onBlur={formik1.handleBlur}
+          placeholder="Enter password"
+          className='my-2 border-2 shadow-inner border-gray-500 h-[30px] p-4 px-2 outline-none '
+          />
+            {formik1.touched.password && formik1.errors.password && <p className={`text-red-700 font-medium text-[0.8rem] ml-1 tracking-widest`}>{formik1.errors.password}</p>}
+        </label>
+        <label className='flex flex-col'>
+          <span className='font-medium'>confirm_password</span>
+          <input 
+          type="password"
+          name='confirm_password'
+          value={formik1.values.confirm_password}
+          onChange={formik1.handleChange}
+          onBlur={formik1.handleBlur}
+          placeholder="Enter password again"
+          className='my-2 border-2 shadow-inner border-gray-500 h-[30px] p-4 px-2 outline-none '
+          />
+            {formik1.touched.confirm_password && formik1.errors.confirm_password && <p className={`text-red-700 font-medium text-[0.8rem] ml-1 tracking-widest`}>{formik1.errors.confirm_password}</p>}
+        </label>
+      </form>}
+     {!isSignUp && <form className='my-4'  onKeyUp={handleKeyEnter2}>
+        <label className='flex flex-col'>
+          <span className='font-medium'>Enter OTP</span>
+          <input 
+          type="text"
+          name='otp'
+          value={formik2.values.otp}
+          onChange={formik2.handleChange}
+          onBlur={formik2.handleBlur}
+          placeholder="Enter OTP"
+          className='my-2 border-2 shadow-inner border-gray-500 h-[30px] p-4 px-2 outline-none '
+          />
+            {formik2.touched.otp && formik2.errors.otp && <p className={`text-red-700 font-medium text-[0.8rem] ml-1 tracking-widest`}>{formik2.errors.otp}</p>}
+        </label>
+      </form>}
+      {isSignUp && <p className='font-poppins text-[0.85rem]'> By enrolling your mobile Email address, you consent to receive automated security notifications via text message from ecommerce. Message and data rates may apply.</p>}
+    {isSignUp && <button className='w-[100%] mt-4 h-[37px] hover:bg-violet-600 font-medium text-[1.1rem] bg-violet-500 rounded-lg' onClick={formik1.handleSubmit}>continue</button>}
+    {isSignUp && <p className='font-poppins text-[0.85rem] mt-2'>
+Already have an account? <span onClick={()=>{navigate('/login')}} className='text-[0.89rem] text-[#4381fe] hover:text-[#194eb9] hover:underline cursor-pointer'>Sign in</span></p>}
+    {!isSignUp && <button className='w-[100%] -my-2 h-[37px] hover:bg-violet-600 font-medium text-[1.1rem] bg-violet-500 rounded-lg' onClick={formik2.handleSubmit}>Sign up</button>}
+      {!isSignUp && <p className='flex justify-center items-center mt-6 text-[#4381fe] hover:text-[#194eb9] hover:underline cursor-pointer'>Resend OTP</p>}
       </div>
     </div>
   )

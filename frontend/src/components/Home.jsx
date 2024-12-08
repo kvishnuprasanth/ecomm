@@ -1,130 +1,127 @@
-import React,{useEffect,useContext, useState, useRef} from 'react'
-import {PostFooter,PostProfile} from '.'
-import { appState } from '../App'
-import { useNavigate ,useParams} from "react-router-dom";
-import dropDown from '../assets/dropDown.png'
-import config from '../source'
+import React,{useEffect,useState} from 'react'
+import { Footer, PhotoSlider,SwiperComponent1,SwiperComponent2,MidelSwiper,LastHome,HomeSection_2} from '.'
+import {motion} from 'framer-motion'
+import {fadeIn,textVariant} from '../utils/motion'
+import { SectionWrapper } from '../hoc'
+import ac_icon from '../assets/ac_icon.png'
+import fridge_icon from '../assets/fridge_icon.png'
+import oven_icon from '../assets/oven_icon.png'
+import washingMachine_icon from '../assets/washingMachine_icon.png'
+import { useNavigate } from 'react-router-dom'
 
-//loader
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
+//back drop
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles } from '@material-ui/core/styles';
 
-const Home = () => {
-  const navigate=useNavigate()
-  const {setNotificatioOn,posts,setPosts,toastError,user,dark,calluser,imgsrc,setimgsrc,imgPreview,setImgPreview,postsSocket}=useContext(appState);
-  const [homeLoader,setHomeLoader]=useState(false);
-  const [arrivalPost, setArrivalPost] = useState(null);
-  const [latestPosts, setLatestPosts] = useState([]);
-  const [pageNo, setPageNo] = useState(1);
-  const containerRef = useRef(null);
+const useStyles = makeStyles((theme) => ({
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
+}));
 
-    const getposts=async ()=>{
-      setHomeLoader(true);
-      let res=await fetch(`${config.baseUrl}/api/home?page=${pageNo}`,{
-        method:"GET",
-        headers:{
-          "Content-Type":"application/json"
-        }
-      })
-      let data=await res.json();
-      if(res.status===200){
-        if(pageNo == 1){
-          setPosts(data.posts)
-          setPageNo(2)
-        }
-        else if(data.posts?.length !== 0){
-          setPosts((prev)=>[...prev, ...data.posts])
-          setPageNo((prev)=>prev+1)
-      }
-        // setPosts((prev)=>{
-        //   console.log(prev);
-        //   return prev
-        // })
-
-      }else{
-        toastError('error in getting posts')
-      }
-      setHomeLoader(false);
-    }
-
-    const handleInfiniteScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-      if (scrollTop + clientHeight >= scrollHeight - 5) {
-        getposts();
-      }
-    };
-
-    const handleimgClick=(src)=>{
-      setimgsrc(src)
-      setImgPreview(true)
-    }
-
-    const updateLatestPosts=()=>{
-      setPosts((prev) => [...latestPosts,...prev]);
-      setLatestPosts([])
-    }
-
-    useEffect(() => {
-      if (postsSocket) {
-        postsSocket.on('postarrived',(data)=>{
-          setArrivalPost(data.newPost)
-        })
-      }
-    }, []);
-    useEffect(() => {
-      arrivalPost && setLatestPosts((prev) => [arrivalPost,...prev]);
-    }, [arrivalPost]);
-    useEffect( () => {
-      calluser()
-      if(pageNo === 1){
-        getposts()
-      }
-    }, []);
-    useEffect(()=>{
-      if(pageNo > 1) handleInfiniteScroll()
-    },[pageNo])
- 
-
+const Card=({product,index,src})=>{
+  const classes=useStyles();
+  const [loading,setLoading]=useState(false)
+  const navigate=useNavigate();
+  const [section1Products,setSection1Products]=useState([]);
+  const getSection1=async ()=>{
+    let res=await fetch(`http://localhost:8000/api/product/getParticularProducts?belongsTo=section1`,{
+            method:"GET",
+            headers:{
+              "Content-Type":"application/json"
+          },
+          credentials:'include', 
+          })
+          let data=await res.json();
+          if(res.status===200){
+            // console.log(data.products);
+         
+            if(data.products!==undefined){setSection1Products(data.products)}
+          }else{
+            window.alert('error in fetching products of section1')
+          }
+  }
+  useEffect(()=>{
+    getSection1()
+    // console.log("section1Products",typeof section1Products);
+  },[])
   return (
-    
-   <div ref={containerRef} className={`h-full min-w-[97%] ss:min-w-[65%] mr-2 rounded-3xl p-2  ${homeLoader?`${dark?"bg-black":"bg-slate-200"}`:""} overflow-y-scroll ` } onScroll={handleInfiniteScroll} onClick={()=>{setNotificatioOn(false)}} >
-
-    {latestPosts.length!==0 && <div onClick={updateLatestPosts} className='absolute flex justify-center items-center top-0 left-[43%] ss:left-[28%] rounded-b-full bg-blue-600 hover:bg-blue-700 h-[38px] w-[43px]'>
-    <img src={dropDown} alt="dropDown" className='mt-1 cursor-pointer h-[40px] w-[40px]'  />
-    </div>}
-    
-    <div className='flex flex-col overflow-scroll no-scrollbar '>
-    {posts.map((post,i)=>(
-     <div key={i}>
-      {post.type!=='Retweet'?<div key={i}  className={`flex flex-col rounded-2xl mb-2 p-1 ${dark?"bg-black hover:bg-[#112]":"bg-white hover:bg-slate-100"} min-h-[50%]   hover:border-3 hover:border-slate-600  transition duration-150 ease-in-out `}>
-      <PostProfile user={post.user}/>
-      <div className='ml-2 cursor-pointer whitespace-pre-wrap break-words' onClick={()=>{navigate(`/post/${post._id}`)}}>
-        <p className='font-poppins text-[15px] p-2'>{post.content}</p>
-      </div>
-      {post.isPhoto && <img src={`${config.baseUrl}/api/post/postPhoto/${post._id}`} alt="logo" className={`h-[25vh] w-[40%] rounded-xl ml-[30%] my-[2%] object-contain hover:border-2  cursor-pointer ${dark?'hover:border-slate-800':"hover:border-slate-300"}`} onClick={()=>handleimgClick(`${config.baseUrl}/api/post/postPhoto/${post._id}`)} />}
-        <PostFooter post={post} />
-    </div>:
-
-    <div className={`flex flex-col rounded-2xl mb-2 p-1 ${dark?"bg-black ":"bg-white "} min-h-[50%]   hover:border-3 hover:border-slate-600  transition duration-150 ease-in-out `}>
-      <PostProfile user={post.user}/>
-      <div className={`flex flex-col ml-6 rounded-2xl mb-2 p-1 ${dark?"bg-black hover:bg-[#112]":"bg-white hover:bg-slate-100"} min-h-[50%]   hover:border-3 hover:border-slate-600 border-t-2 border-l-2 ${dark?'border-slate-700':'border-slate-300'} transition duration-150 ease-in-out  cursor-pointer`} onClick={()=>{navigate(`/post/${post.retweetedRef._id}`)}} >
-      <PostProfile user={post.retweetedRef.user}/>
-      <div className='ml-2 whitespace-pre-wrap break-words'>
-        <p className='font-medium text-[16px] p-2 '>{post.retweetedRef.content}</p>
-      </div>
-      {post.retweetedRef.isPhoto && <img src={`${config.baseUrl}/api/post/postPhoto/${post.retweetedRef._id}`} alt="logo" className={`h-[25vh] w-[40%] rounded-xl ml-[30%] my-[2%] object-contain `} />}
-    </div>
-    <PostFooter post={post} />
-    </div>
-    }
+  <div className="xs:w-[250px] w-full">
+    {/* {console.log(index)} */}
+    <motion.div
+    variants={fadeIn("right","spring",0.3*index,0.75)}
+    className='w-[1005] p-[1px] rounded-[20px] '
+     >
+      <motion.div
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      onClick={()=>{navigate(`/product/${section1Products[parseInt(index)-1]._id}`)}}
+    key={product._id} className='h-auto p-2 w-[250px] bg-white shadow-xl rounded-xl cursor-pointer'>
+     <div className='flex justify-center items-center my-4'>
+     <img src={src} alt={product.name} className='h-[180px] object-cover p-2' />
      </div>
-    ))}
-    {homeLoader && <div className='m-auto mt-[40%]'> <Box sx={{ display: 'flex' }}>
-      <CircularProgress />
-    </Box></div>}
+      <div className='font-medium flex flex-row justify-between items-center px-6 my-2'>
+        <p>{product.name}</p>
+        <p className='font-medium'>$ <span className='font-bold'>{product.price}</span></p>
+      </div>
+      <p className='px-4'>⭐⭐⭐</p>
+      <p className='font-medium flex flex-row justify-between items-center px-4 my-4 break-words'>Description</p>
+    </motion.div>
+    </motion.div>
+    {loading && <Backdrop className={classes.backdrop} open>
+        <CircularProgress color="inherit" />
+      </Backdrop>}
+      {/* <Footer/> */}
     </div>
-   </div>
+  )
+}
+const section1=[{
+  name:'Air conditioner',
+  price:'129'
+},
+{
+  name:'Fridge',
+  price:'399'
+},{
+  name:'Oven',
+  price:'229'
+},{
+  name:'washing machine',
+  price:'199'
+}
+]
+const Home = () => {
+  
+  useEffect(()=>{
+    window.scrollTo(0,0)
+    // getSection1()
+    // console.log("section1Products",typeof section1Products);
+  },[])
+  return (
+    <div className='flex flex-col justify-center items-center'>
+    <PhotoSlider/>
+    <div className='absolute z-[1] top-[40vh] mt-20 flex flex-wrap gap-20 px-10'>
+      {/* {section1Products.length!==0 && section1Products.map((product,index)=>(
+        ))} */}
+        <Card product={section1[0]} src={ac_icon} index='1'/>
+        <Card product={section1[1]} src={fridge_icon} index='2'/>
+        <Card product={section1[2]} src={oven_icon} index='3'/>
+        <Card product={section1[3]} src={washingMachine_icon} index='4'/>
+    </div>
+    <div className='w-[100vw] h-auto bg-gray-200 absolute top-[125vh]'>
+      <HomeSection_2/>
+      <SwiperComponent1/>
+      <MidelSwiper/>
+      <SwiperComponent2/>
+      <LastHome/>
+      <Footer/>
+    </div>
+   
+    </div>
   )
 }
 
-export default Home
+export default SectionWrapper(Home,"about")

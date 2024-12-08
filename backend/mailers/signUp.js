@@ -4,10 +4,10 @@ module.exports.signUp = async(email) => {
    
    try {
     let info=await nodemailer.transporter.sendMail({
-        from:process.env.AUTH_MAILER_EMAIL,
+        from:'c4746665@gmail.com',
         to: email,
         subject: "Thank You",
-        html: `Succesfully register on SocialMedia`
+        html: `Succesfully register on E-commerce`
      });
      return ;
    } catch (error) {

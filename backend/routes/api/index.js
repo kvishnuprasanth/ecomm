@@ -1,17 +1,14 @@
 const express=require('express');
 const router=express.Router();
-const {home}=require('../../controllers/home_controller')
+const homeController=require('../../controllers/home_controller')
+
 
 router.use('/user',require('./user'))
-router.use('/post',require('./post'))
-router.use('/notification',require('./notification'))
-router.use('/comment',require('./comment'))
-router.use('/like',require('./like'))
-router.use('/follow',require('./follow'))
-router.use('/bookmark',require('./bookmark'))
-router.use('/retweet',require('./retweet'))
-router.use('/chat',require('./message'))
-router.use('/is',require('./is'))
-router.use('/home',home)
+router.use('/product',require('./product'))
+router.use('/cart',require('./cart'))
+router.use('/stripe',require('./stripe'))
+router.use('/order',require('./order'))
+router.use('/review',require('./review'))
+router.use('/',homeController.home)
 
 module.exports=router;
