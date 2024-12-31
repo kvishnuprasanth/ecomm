@@ -5,9 +5,12 @@ import {
   Route
 } from "react-router-dom";
 //back drop
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { makeStyles } from '@material-ui/core/styles';
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+// import { makeStyles } from "@mui/styles";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+
+
 
 import { useLocation } from 'react-router-dom';
 import { useSelector,useDispatch } from 'react-redux'
@@ -16,17 +19,17 @@ import {userState} from './store/user'
 import {cartProductsActions} from './store/cartProductsSlice'
 import {cartNumberAction} from './store/cartNumberSlice'
 
-const useStyles = makeStyles((theme) => ({
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 1,
-    color: '#fff',
-  },
-}));
+// const useStyles = makeStyles((theme) => ({
+//   backdrop: {
+//     zIndex: theme.zIndex.drawer + 1,
+//     color: '#fff',
+//   },
+// }));
 
 const App = () => {
   const location=useLocation()
   const dispatch=useDispatch();
-  const classes=useStyles();
+  // const classes=useStyles();
   const [loading,setLoading]=useState(false)
   const user=useSelector(state=>state.user.user)
     const isCreateProductOpen=useSelector(state=>state.isCreateProductFormOpen.isCreateProductOpen)
@@ -107,9 +110,9 @@ const App = () => {
         <Route exact path='/checkoutSuccess' element={<CheckoutSuccess/>} />
         <Route exact path='/products' element={<Products/>} />
       </Routes>
-      {loading && <Backdrop className={classes.backdrop} open>
+      {/* {loading && <Backdrop className={classes.backdrop} open>
         <CircularProgress color="inherit" />
-      </Backdrop>}
+      </Backdrop>} */}
       {/* <Footer/> */}
     </div>
   )

@@ -123,7 +123,7 @@ const Login = () => {
        <p className='font-poppins text-[0.93rem]'>{formik1.values.email}</p>
        <p className='mx-3 text-[#4381fe] hover:text-[#194eb9] hover:underline cursor-pointer' onClick={()=>{formik1.values.email='';dispatch(afterEmail.setTrue())}}>change</p>
        </div>}
-      {isEmail && !isVerify && <form className='my-2'  onKeyUp={handleKeyEnter1}>
+      { isEmail && !isVerify && <form className='my-2'  onKeyUp={handleKeyEnter1}>
         <label className='flex flex-col'>
           <span className='font-medium'>your Email</span>
           <input 
